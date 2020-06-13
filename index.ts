@@ -86,6 +86,7 @@ const webserver = new aws.ec2.Instance("webserver-www", {
     ami: ami.id,
     userData: userData,
     vpcSecurityGroupIds: [www_group.name],
+    subnetId: "subnet-www",
 });
 
 const appserver = new aws.ec2.Instance("appserver", {
@@ -93,6 +94,8 @@ const appserver = new aws.ec2.Instance("appserver", {
     securityGroups: [app_group.name],
     ami: ami.id,
     userData: userData,
+    vpcSecurityGroupIds: [app_group.name],
+    subnetId: "subnet-app",
 });
 
 const bastion = new aws.ec2.Instance("bastion", {
@@ -100,8 +103,12 @@ const bastion = new aws.ec2.Instance("bastion", {
     securityGroups: [bastion_group.name],
     ami: ami.id,
     userData: userData,
+    vpcSecurityGroupIds: [bastion_group.name],
+    subnetId: "subnet-bastion",
 });
 
 export const WebserverPublicIp = webserver.publicIp;
 export const WebserverPublicHostName = webserver.publicDns;
+export const BastionPublicIp = bastion.publicIp;
+export const BastionPublicHostname = bastion.publicDns;
 
