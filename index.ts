@@ -44,12 +44,43 @@ const app_subnet = new aws.ec2.Subnet("subnet-app", {
     availabilityZone: "ca-central-1a"
 });
 
-const gw = new aws.ec2.InternetGateway("gw", {
+// With no connections going out to the internet, I think we may not need
+// these.
+//
+const igw = new aws.ec2.InternetGateway("igw", {
     tags: {
-        Name: "gw",
+        Name: "igw",
     },
     vpcId: vpc.id,
-})
+});
+
+const bastion_rt = new aws.ec2.RouteTable("bastion-route", {
+    routes: [{
+        cidrBlock: "0.0.0.0/0",
+        gatewayId: igw.id,
+    }],
+    vpcId: vpc.id,
+});
+
+const bastion_rt_assoc = new aws.ec2.RouteTableAssociation("bastion-rt-assoc", {
+    subnetId: bastion_subnet.id,
+    routeTableId: bastion_rt.id,
+});
+
+
+
+// const web_route = new aws.ec2.RouteTable("web-route", {
+//     routes: [{
+//         cidrBlock: "0.0.0.0/0",
+//         gatewayId: igw.id,
+//     }],
+//     vpcId: vpc.id,
+// });
+
+// const web_rt_assoc = new aws.ec2.RouteTableAssociation("web-rt-assoc", {
+//     subnetId: web_subnet.id,
+//     routeTableId: web_route.id,
+// });
 
 const bastion_group = new aws.ec2.SecurityGroup("bastion", {
     // Repalce cidrBlocks with your own IP or CIDR range
@@ -65,20 +96,9 @@ const bastion_group = new aws.ec2.SecurityGroup("bastion", {
     },
 });
 
-const www_group = new aws.ec2.SecurityGroup("webserver", {
+// Rules are after app_group because of circular reference
+const web_group = new aws.ec2.SecurityGroup("webserver", {
     vpcId: vpc.id,
-    ingress: [{
-        protocol: "tcp",
-        fromPort: 443,
-        toPort: 443,
-        cidrBlocks: ["0.0.0.0/0"],
-    },
-    {
-        protocol: "tcp",
-        fromPort: 22,
-        toPort: 22,
-        securityGroups: [bastion_group.id]
-    }],
     tags: {
         Name: "sg_webserver",
     },
@@ -87,7 +107,7 @@ const www_group = new aws.ec2.SecurityGroup("webserver", {
 const app_group = new aws.ec2.SecurityGroup("appserver", {
     ingress: [{
         protocol: "tcp",
-        securityGroups: [www_group.id],
+        securityGroups: [web_group.id],
         fromPort: 80,
         toPort: 80
     },
@@ -102,11 +122,30 @@ const app_group = new aws.ec2.SecurityGroup("appserver", {
         cidrBlocks: ["127.0.0.1/32"],
         fromPort: 0,
         toPort: 0,
-    }], // No backsies on the www_group!
+    }], // No backsies on the web_group!
     vpcId: vpc.id,
     tags: {
         Name: "sg_appserver"
     },
+});
+
+// SecurityGroup is before app_group because of circular reference
+const world_to_web = new aws.ec2.SecurityGroupRule("world-to-web", {
+    type: "ingress",
+    protocol: "tcp",
+    fromPort: 443,
+    toPort: 443,
+    cidrBlocks: ["0.0.0.0/0"],
+    securityGroupId: web_group.id,
+});
+
+const app_to_web = new aws.ec2.SecurityGroupRule("app-to-web", {
+    type: "ingress",
+    protocol: "tcp",
+    fromPort: 80,
+    toPort: 80,
+    securityGroupId: web_group.id,
+    sourceSecurityGroupId: app_group.id,
 });
 
 const userData = 
@@ -119,8 +158,10 @@ const webserver = new aws.ec2.Instance("webserver", {
     instanceType: size,
     ami: ami.id,
     userData: userData,
-    vpcSecurityGroupIds: [www_group.id],
+    vpcSecurityGroupIds: [web_group.id],
     subnetId: web_subnet.id,
+    keyName: "ca_central_key",
+    associatePublicIpAddress: true,
 });
 
 const appserver = new aws.ec2.Instance("appserver", {
@@ -129,6 +170,7 @@ const appserver = new aws.ec2.Instance("appserver", {
     userData: userData,
     vpcSecurityGroupIds: [app_group.id],
     subnetId: app_subnet.id,
+    keyName: "ca_central_key",
 });
 
 const bastion = new aws.ec2.Instance("bastion", {
@@ -136,10 +178,11 @@ const bastion = new aws.ec2.Instance("bastion", {
     ami: ami.id,
     vpcSecurityGroupIds: [bastion_group.id],
     subnetId: bastion_subnet.id,
+    keyName: "ca_central_key",
+    associatePublicIpAddress: true,
 });
 
 export const WebserverPublicIp = webserver.publicIp;
 export const WebserverPublicHostName = webserver.publicDns;
 export const BastionPublicIp = bastion.publicIp;
 export const BastionPublicHostname = bastion.publicDns;
-
