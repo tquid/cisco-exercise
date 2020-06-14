@@ -44,9 +44,6 @@ const app_subnet = new aws.ec2.Subnet("subnet-app", {
     availabilityZone: "ca-central-1a"
 });
 
-// With no connections going out to the internet, I think we may not need
-// these.
-//
 const igw = new aws.ec2.InternetGateway("igw", {
     tags: {
         Name: "igw",
@@ -148,6 +145,15 @@ const app_to_web = new aws.ec2.SecurityGroupRule("app-to-web", {
     sourceSecurityGroupId: app_group.id,
 });
 
+const bastion_to_web = new aws.ec2.SecurityGroupRule("bastion-to-web", {
+    type: "ingress",
+    protocol: "tcp",
+    fromPort: 22,
+    toPort: 22,
+    securityGroupId: web_group.id,
+    sourceSecurityGroupId: bastion_group.id,
+});
+
 const userData = 
 `#!/bin/bash
 sudo yum update -y
@@ -183,6 +189,6 @@ const bastion = new aws.ec2.Instance("bastion", {
 });
 
 export const WebserverPublicIp = webserver.publicIp;
-export const WebserverPublicHostName = webserver.publicDns;
 export const BastionPublicIp = bastion.publicIp;
-export const BastionPublicHostname = bastion.publicDns;
+export const WebserverPrivateIp = webserver.privateIp;
+export const AppserverPrivateIp = appserver.privateIp;
