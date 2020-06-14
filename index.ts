@@ -29,7 +29,7 @@ const web_subnet = new aws.ec2.Subnet("subnet-web", {
 const bastion_subnet = new aws.ec2.Subnet("subnet-bastion", {
     cidrBlock: "10.0.1.0/24",
     tags: {
-        Name: "bastion-web",
+        Name: "subnet-bastion",
     },
     vpcId: vpc.id,
     availabilityZone: "ca-central-1a"
