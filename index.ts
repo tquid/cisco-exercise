@@ -145,20 +145,13 @@ const bastion_to_web_in = new aws.ec2.SecurityGroupRule("bastion-to-web-in", {
     sourceSecurityGroupId: bastion_group.id,
 });
 
-const bastion_to_web_out = new aws.ec2.SecurityGroupRule("bastion-to-web-out", {
+const bastion_to_vpc = new aws.ec2.SecurityGroupRule("bastion-to-vpc", {
     type: "egress",
     protocol: "tcp",
     fromPort: 22,
     toPort: 22,
     securityGroupId: bastion_group.id,
-});
-
-const bastion_to_app_out = new aws.ec2.SecurityGroupRule("bastion-to-app-out", {
-    type: "egress",
-    protocol: "tcp",
-    fromPort: 22,
-    toPort: 22,
-    securityGroupId: bastion_group.id,
+    cidrBlocks: ["10.0.0.0/16"],
 });
 
 const desk_to_bastion = new aws.ec2.SecurityGroupRule("desk-to-bastion", {
