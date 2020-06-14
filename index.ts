@@ -64,7 +64,10 @@ const bastion_rt_assoc = new aws.ec2.RouteTableAssociation("bastion-rt-assoc", {
     routeTableId: bastion_rt.id,
 });
 
-
+const web_rt_assoc = new aws.ec2.RouteTableAssociation("web-rt-assoc", {
+    subnetId: web_subnet.id,
+    routeTableId: bastion_rt.id,
+});
 
 // const web_route = new aws.ec2.RouteTable("web-route", {
 //     routes: [{
@@ -81,12 +84,6 @@ const bastion_rt_assoc = new aws.ec2.RouteTableAssociation("bastion-rt-assoc", {
 
 const bastion_group = new aws.ec2.SecurityGroup("bastion", {
     // Repalce cidrBlocks with your own IP or CIDR range
-    ingress: [{ 
-        protocol: "tcp",
-        fromPort: 22,
-        toPort: 22,
-        cidrBlocks: ["174.6.14.57/32"]},
-    ],
     vpcId: vpc.id,
     tags: {
         Name: "sg_bastion",
@@ -102,6 +99,7 @@ const web_group = new aws.ec2.SecurityGroup("webserver", {
 });
 
 const app_group = new aws.ec2.SecurityGroup("appserver", {
+    vpcId: vpc.id,
     ingress: [{
         protocol: "tcp",
         securityGroups: [web_group.id],
@@ -114,13 +112,6 @@ const app_group = new aws.ec2.SecurityGroup("appserver", {
         fromPort: 22,
         toPort: 22
     }],
-    egress: [{
-        protocol: "-1",
-        cidrBlocks: ["127.0.0.1/32"],
-        fromPort: 0,
-        toPort: 0,
-    }], // No backsies on the web_group!
-    vpcId: vpc.id,
     tags: {
         Name: "sg_appserver"
     },
@@ -136,7 +127,7 @@ const world_to_web = new aws.ec2.SecurityGroupRule("world-to-web", {
     securityGroupId: web_group.id,
 });
 
-const app_to_web = new aws.ec2.SecurityGroupRule("app-to-web", {
+const app_to_web_in = new aws.ec2.SecurityGroupRule("app-to-web-in", {
     type: "ingress",
     protocol: "tcp",
     fromPort: 80,
@@ -145,13 +136,38 @@ const app_to_web = new aws.ec2.SecurityGroupRule("app-to-web", {
     sourceSecurityGroupId: app_group.id,
 });
 
-const bastion_to_web = new aws.ec2.SecurityGroupRule("bastion-to-web", {
+const bastion_to_web_in = new aws.ec2.SecurityGroupRule("bastion-to-web-in", {
     type: "ingress",
     protocol: "tcp",
     fromPort: 22,
     toPort: 22,
     securityGroupId: web_group.id,
     sourceSecurityGroupId: bastion_group.id,
+});
+
+const bastion_to_web_out = new aws.ec2.SecurityGroupRule("bastion-to-web-out", {
+    type: "egress",
+    protocol: "tcp",
+    fromPort: 22,
+    toPort: 22,
+    securityGroupId: bastion_group.id,
+});
+
+const bastion_to_app_out = new aws.ec2.SecurityGroupRule("bastion-to-app-out", {
+    type: "egress",
+    protocol: "tcp",
+    fromPort: 22,
+    toPort: 22,
+    securityGroupId: bastion_group.id,
+});
+
+const desk_to_bastion = new aws.ec2.SecurityGroupRule("desk-to-bastion", {
+    type: "ingress",
+    protocol: "tcp",
+    fromPort: 22,
+    toPort: 22,
+    cidrBlocks: ["174.6.14.57/32"],
+    securityGroupId: bastion_group.id,
 });
 
 const userData = 
@@ -168,6 +184,9 @@ const webserver = new aws.ec2.Instance("webserver", {
     subnetId: web_subnet.id,
     keyName: "ca_central_key",
     associatePublicIpAddress: true,
+    tags: {
+        Name: "webserver",
+    }
 });
 
 const appserver = new aws.ec2.Instance("appserver", {
@@ -177,6 +196,9 @@ const appserver = new aws.ec2.Instance("appserver", {
     vpcSecurityGroupIds: [app_group.id],
     subnetId: app_subnet.id,
     keyName: "ca_central_key",
+    tags: {
+        Name: "appserver",
+    }
 });
 
 const bastion = new aws.ec2.Instance("bastion", {
@@ -186,6 +208,9 @@ const bastion = new aws.ec2.Instance("bastion", {
     subnetId: bastion_subnet.id,
     keyName: "ca_central_key",
     associatePublicIpAddress: true,
+    tags: {
+        Name: "bastion",
+    }
 });
 
 export const WebserverPublicIp = webserver.publicIp;
