@@ -20,3 +20,4 @@ You will need an AWS user with programmatic access to create instances, security
 2. 
 
 pulumi config set aws:region ca-central-1
+https://www.pulumi.com/docs/intro/concepts/programming-model/#config
