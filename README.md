@@ -31,6 +31,3 @@ You will need an AWS user with programmatic access to create instances, security
 7. Once testing is done, delete the outbound security group rule with `pulumi destroy -t <webToWorldUrn value from outputs>`
 8. Perform any other tests to verify the network is set up as desired.
 9. When done, use `pulumi destroy` to remove the resources.
-
-
-https://www.pulumi.com/docs/intro/concepts/programming-model/#config
