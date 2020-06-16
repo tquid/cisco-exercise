@@ -15,6 +15,8 @@ You will need several software pre-requisites:
 
 You will need an AWS user with programmatic access to create instances, security groups, VPCs, routes, route tables, and subnets. Instructions for setting up here: https://www.pulumi.com/docs/intro/cloud-providers/aws/setup/
 
+You will particularly need an AWS keypair for ssh connection, which if you don't have one, can be set following these directions: https://docs.aws.amazon.com/cli/latest/userguide/cli-services-ec2-keypairs.html#creating-a-key-pair.
+
 ## Running the install
 
 1. From the repo directory, run `npm install` to set up npm dependencies.
