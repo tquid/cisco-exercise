@@ -205,7 +205,7 @@ const webserver = new aws.ec2.Instance("webserver", {
     userData: userData,
     vpcSecurityGroupIds: [web_group.id],
     subnetId: web_subnet.id,
-    keyName: "mySshKey",
+    keyName: mySshKey,
     associatePublicIpAddress: true,
     tags: {
         Name: "webserver",
@@ -218,7 +218,7 @@ const appserver = new aws.ec2.Instance("appserver", {
     userData: userData,
     vpcSecurityGroupIds: [app_group.id],
     subnetId: app_subnet.id,
-    keyName: "mySshKey",
+    keyName: mySshKey,
     tags: {
         Name: "appserver",
     }
@@ -229,7 +229,7 @@ const bastion = new aws.ec2.Instance("bastion", {
     ami: ami.id,
     vpcSecurityGroupIds: [bastion_group.id],
     subnetId: bastion_subnet.id,
-    keyName: "mySshKey",
+    keyName: mySshKey,
     associatePublicIpAddress: true,
     tags: {
         Name: "bastion",
