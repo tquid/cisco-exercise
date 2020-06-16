@@ -24,12 +24,13 @@ You will need an AWS user with programmatic access to create instances, security
     pulumi config set myAz <AZ to use for your instances, e.g. ca-central-1a>
     pulumi config set myCidr <Your CIDR that you will connect from, e.g. 99.53.28.199/32>
     ```
-3. Select "yes" in the interactive interface that comes up.
-4. Note the **Outputs** section with the IP addresses and URN (Pulumi's identifier for a resource). I find it easiest to use a separate terminal for any testing, leavin the Outputs information accessible for copying & pasting.
-5. Test the webserver by using `curl` or your browser of choice. It may take a few minutes to come up.
-6. Once testing is done, delete the outbound security group rule with `pulumi destroy -t <webToWorldUrn value from outputs>`
-7. Perform any other tests to verify the network is set up as desired.
-8. When done, use `pulumi destroy` to remove the resources.
+3. Run `pulumi up`.
+4. Select "yes" in the interactive interface that comes up.
+5. Note the **Outputs** section with the IP addresses and URN (Pulumi's identifier for a resource). I find it easiest to use a separate terminal for any testing, leavin the Outputs information accessible for copying & pasting.
+6. Test the webserver by using `curl` or your browser of choice. It may take a few minutes to come up.
+7. Once testing is done, delete the outbound security group rule with `pulumi destroy -t <webToWorldUrn value from outputs>`
+8. Perform any other tests to verify the network is set up as desired.
+9. When done, use `pulumi destroy` to remove the resources.
 
 
 https://www.pulumi.com/docs/intro/concepts/programming-model/#config
