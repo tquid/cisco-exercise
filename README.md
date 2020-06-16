@@ -22,7 +22,7 @@ You will particularly need an AWS keypair for ssh connection, which if you don't
 1. From the repo directory, run `npm install` to set up npm dependencies.
 2. Run commands to set up for your network and cloud preferences:
     ```
-    pulumi stack init dev
+    pulumi stack init <a name for your stack, can be anything>
     pulumi config set aws:region <Your AWS region, e.g. ca-central-1>
     pulumi config set myAz <AZ to use for your instances, e.g. ca-central-1a>
     pulumi config set myCidr <Your CIDR that you will connect from, e.g. 99.53.28.199/32>
