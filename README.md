@@ -23,6 +23,7 @@ You will need an AWS user with programmatic access to create instances, security
     pulumi config set aws:region <Your AWS region, e.g. ca-central-1>
     pulumi config set myAz <AZ to use for your instances, e.g. ca-central-1a>
     pulumi config set myCidr <Your CIDR that you will connect from, e.g. 99.53.28.199/32>
+    pulumi config set mySshKey <An ssh key pair name from AWS to use>
     ```
 3. Run `pulumi up`.
 4. Select "yes" in the interactive interface that comes up.
